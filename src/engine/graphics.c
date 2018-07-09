@@ -1,17 +1,35 @@
 #include "graphics.h"
 
-GLFWwindow *graphics_init(u32 width, u32 height, const char *title)
+static struct
+{
+	bool initialized;
+	u32 num_windows;
+	GLFWwindow *windows[GRAPHICS_MAX_WINDOWS];
+	u32 indices[GRAPHICS_MAX_WINDOWS];
+} graphics_info;
+
+Window graphics_create_window(u32 width, u32 height, const char *title)
 {
 	GLFWwindow *result;
 
-	if (!s_initialized)
+	if (!graphics_info.initialized)
 	{
+		for (u32 i = 0; i < GRAPHICS_MAX_WINDOWS; i++) {
+			graphics_info.indices[i] = i;
+		}
+
 		if (!glfwInit())
 		{
 			ERROR("Failed to initialize GLFW.");
-			return NULL;
+			return -1;
 		}
 		INFO("Initialized GLFW.");
+	}
+
+	if (graphics_info.num_windows == GRAPHICS_MAX_WINDOWS)
+	{
+		ERROR("Maximum number of windows surpassed.");
+		return -1;
 	}
 
 	// @TODO: adapt this to other machines
@@ -24,19 +42,19 @@ GLFWwindow *graphics_init(u32 width, u32 height, const char *title)
 	if (!result)
 	{
 		glfwTerminate();
-		return NULL;
+		return -1;
 	}
 
 	glfwMakeContextCurrent(result);
 
-	if (!s_initialized)
+	if (!graphics_info.initialized)
 	{
 		glewExperimental = GL_TRUE;
 		i32 error = glewInit();
 		if (error)
 		{
 			FATAL("Failed to initialize OpenGL (error code: %d).", error);
-			return NULL;
+			return -1;
 		}
 		INFO("Initialized OpenGL.");
 		INFO("Graphics Card Vendor: %s", glGetString(GL_VENDOR));
@@ -44,29 +62,58 @@ GLFWwindow *graphics_init(u32 width, u32 height, const char *title)
 		INFO("OpenGL version: %s", glGetString(GL_VERSION));
 		INFO("GLSL version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-		s_initialized = true;
+		graphics_info.initialized = true;
 	}
 
-	return (void *)result;
+	graphics_info.windows[graphics_info.indices[graphics_info.num_windows]] = result;
+	graphics_info.num_windows++;
+
+	return graphics_info.num_windows - 1;
 }
 
-void graphics_terminate(GLFWwindow *window)
+void graphics_destroy_window(Window *window)
 {
-	glfwDestroyWindow(window);
-	INFO("Closed window: %p", window);
+	GLFWwindow **temp = &graphics_info.windows[graphics_info.indices[*window]]; 
+	glfwDestroyWindow(*temp);
+	*temp = graphics_info.windows[graphics_info.indices[graphics_info.num_windows - 1]];
+	graphics_info.indices[graphics_info.num_windows - 1] = graphics_info.indices[*window];
+	graphics_info.num_windows--;
+	INFO("Closed window: %d", *window);
+	*window = -1;
+
+	if (graphics_info.num_windows == 0)
+	{
+		INFO("All windows are closed, terminating GLFW.");
+		glfwTerminate();
+	}
 }
 
-bool graphics_should_terminate(GLFWwindow *window)
+bool graphics_terminated()
 {
-	return glfwWindowShouldClose(window);
+	return graphics_info.initialized && !graphics_info.num_windows;
 }
 
-void graphics_begin_frame(GLFWwindow *window)
-{}
-
-void graphics_end_frame(GLFWwindow *window)
+bool window_should_close(Window *window)
 {
-	glfwMakeContextCurrent(window);
-	glfwSwapBuffers(window);
-	glfwPollEvents();
+	return glfwWindowShouldClose(graphics_info.windows[graphics_info.indices[*window]]);
+}
+
+void graphics_begin_frame(Window *window)
+{
+	if (*window != -1)
+	{}
+}
+
+void graphics_end_frame(Window *window)
+{
+	if (*window != -1)
+	{
+		glfwMakeContextCurrent(graphics_info.windows[graphics_info.indices[*window]]);
+		glfwSwapBuffers(graphics_info.windows[graphics_info.indices[*window]]);
+		glfwPollEvents();
+
+		if (window_should_close(window)) {
+			graphics_destroy_window(window);
+		}
+	}
 }
