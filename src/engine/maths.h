@@ -88,6 +88,7 @@ mat3 mat3_transformation(vec2 pos, f32 angle, vec2 scale);
 
 /* mat4 */
 
+mat4 mat4_identtiy();
 mat4 *mat4_init_to_identity(mat4 *a);
 mat4 mat4_rotation_matrix_x(f32 alpha);
 mat4 mat4_rotation_matrix_y(f32 beta);

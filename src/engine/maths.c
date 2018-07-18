@@ -138,6 +138,17 @@ mat3 mat3_transformation(vec2 pos, f32 angle, vec2 scale)
 
 /* mat4 */
 
+mat4 mat4_identity()
+{
+	mat4 result =  {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
+	return result;
+}
+
 mat4 *mat4_init_to_identity(mat4 *a)
 {
 	for (u32 i = 0; i < 16; i++) {

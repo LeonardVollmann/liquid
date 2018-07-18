@@ -1,5 +1,8 @@
 #pragma once
 
+#define DEBUG_GL 1
+#define DEBUG_LEVEL_INFO
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -35,8 +38,6 @@ typedef int64_t i64;
 #define COLOR_LINE ANSI_WHITE
 #define COLOR_FUNC ANSI_MAGENTA
 #define COLOR_MSG ANSI_WHITE
-
-#define DEBUG_LEVEL_INFO // Default
 
 #ifdef DEBUG_LEVEL_INFO
 	#define DEBUG_LEVEL_WARN
@@ -115,4 +116,17 @@ typedef int64_t i64;
 #else
 	#define DEBUG(...)
 	#define ASSERT(x, ...)
+#endif
+
+#if DEBUG_GL
+	#define GL_CALL(func,  ...)						\
+		do {										\
+			(func)(__VA_ARGS__);					\
+			GLenum error = glGetError();			\
+			if (error != GL_NO_ERROR) {				\
+				ERROR("OpenGL error: %d", error);	\
+			}										\
+		} while (0)
+#else
+	#define GL_CALL(func,  ...) (func)(__VA_ARGS__)
 #endif
