@@ -4,6 +4,7 @@
 #include "maths.h"
 #include "graphics.h"
 #include "shader.h"
+#include "texture.h"
 
 int main(int argc, char const *argv[])
 {
@@ -12,16 +13,21 @@ int main(int argc, char const *argv[])
 	Window window = graphics_create_window(640, 480, "Window");
 	//Window window2 = graphics_create_window(640, 480, "Window2");
 
-	Layer layer;
-	mat4_init_to_identity(&layer.projection);
-	mat4_init_to_identity(&layer.view);
+	Texture bricks = texture_load("res/bricks.png");
+	Texture bricks2 = texture_load("res/bricks2.png");
 
 	while (!graphics_terminated())
 	{
 		graphics_begin_frame(&window);
 
 		vec3 pos = {0, 0, 0};
-		graphics_draw_triangle(pos, 0xff00ff);
+		vec2 scale = {1, 1};
+		vec4 color1 = {0, 0.1, 0.1, 1};
+		vec4 color2 = {0.1, 0, 0.1, 1};
+		graphics_draw_rect(pos, &bricks, color1);
+		graphics_draw_triangle(pos, &bricks2, color2);
+
+		//graphics_draw_text(pos, "Hello World");
 
 		graphics_end_frame(&window);
 

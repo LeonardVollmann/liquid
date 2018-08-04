@@ -4,8 +4,7 @@
 	#version 330 core 															\
 																				\
 	layout(location = 0) in vec3 vertex_pos;									\
-	layout(location = 1) in vec4 vertex_color;									\
-	layout(location = 2) in vec2 vertex_uv;										\
+	layout(location = 1) in vec2 vertex_uv;										\
 																				\
 	out vec2 uv;																\
 																				\
@@ -31,7 +30,7 @@
 																\
 	void main()													\
 	{															\
-		frag_color = color + texture(diffuse, uv);				\
+		frag_color = texture(diffuse, uv) + color;				\
 	}															\
 "
 
@@ -72,7 +71,7 @@ static Shader shader_create(char *vsource, char *fsource, const char *vname, con
 	GL_CALL(glGetShaderiv, vshader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		GL_CALL(glGetShaderInfoLog, vshader, 1024, 0, shader_info_log);
-	    ERROR("Failed to compile vertex shader %s: %s", vname, shader_info_log);
+	    FATAL("Failed to compile vertex shader %s: %s", vname, shader_info_log);
 	};
 
 	fshader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -81,7 +80,7 @@ static Shader shader_create(char *vsource, char *fsource, const char *vname, con
 	GL_CALL(glGetShaderiv, fshader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 	    GL_CALL(glGetShaderInfoLog, fshader, 1024, 0, shader_info_log);
-	    ERROR("Failed to compile fragment shader %s: %s", fname, shader_info_log);
+	    FATAL("Failed to compile fragment shader %s: %s", fname, shader_info_log);
 	};
 
 	Shader result = glCreateProgram();
@@ -91,7 +90,7 @@ static Shader shader_create(char *vsource, char *fsource, const char *vname, con
 	GL_CALL(glGetProgramiv, result, GL_LINK_STATUS, &success);
 	if (!success) {
 		GL_CALL(glGetProgramInfoLog, result, 1024, NULL, shader_info_log);
-		ERROR("Failed to link shaders %s and %s: %s", vname, fname, shader_info_log);
+		FATAL("Failed to link shaders %s and %s: %s", vname, fname, shader_info_log);
 	}
 
 	/*
@@ -99,7 +98,7 @@ static Shader shader_create(char *vsource, char *fsource, const char *vname, con
 	GL_CALL(glGetProgramiv, result, GL_VALIDATE_STATUS, &success);
 	if (!success) {
 		GL_CALL(glGetProgramInfoLog, result, 1024, NULL, shader_info_log);
-		ERROR("Failed to validate shaders %s and %s: %s", vname, fname, shader_info_log);
+		FATAL("Failed to validate shaders %s and %s: %s", vname, fname, shader_info_log);
 	}
 	*/
 	

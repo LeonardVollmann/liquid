@@ -31,11 +31,24 @@ static void init_primitives()
 		 0.0f,  1.0f, 0.0f
 	};
 
+	static const GLfloat triangle_uvs[] = {
+		0.0f, 0.0f,
+		0.5f, 1.0f,
+		1.0f, 0.0f
+	};
+
 	static const GLfloat rect_vertices[] = {
 		-1.0f, -1.0f, 0.0f,
 		-1.0f,  1.0f, 0.0f,
 		 1.0f, -1.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f
+	};
+
+	static const GLfloat rect_uvs[] = {
+		0.0f, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
 	};
 
 	GLuint vbo;
@@ -45,9 +58,12 @@ static void init_primitives()
 	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle.vao);
 	GL_CALL(glGenBuffers, 1, &vbo);
 	GL_CALL(glBindBuffer, GL_ARRAY_BUFFER, vbo);
-	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
+	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(triangle_vertices) + sizeof(triangle_uvs), triangle_vertices, GL_STATIC_DRAW);
+	GL_CALL(glBufferSubData, GL_ARRAY_BUFFER, sizeof(triangle_vertices), sizeof(triangle_uvs), triangle_uvs);
 	GL_CALL(glEnableVertexAttribArray, 0);
+	GL_CALL(glEnableVertexAttribArray, 1);
 	GL_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	GL_CALL(glVertexAttribPointer, 1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) sizeof(triangle_vertices));
 	GL_CALL(glBindVertexArray, 0);
 	GL_CALL(glDeleteBuffers, 1, &vbo);
 
@@ -56,9 +72,12 @@ static void init_primitives()
 	GL_CALL(glBindVertexArray, graphics_data.primitive_rect.vao);
 	GL_CALL(glGenBuffers, 1, &vbo);
 	GL_CALL(glBindBuffer, GL_ARRAY_BUFFER, vbo);
-	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(rect_vertices), rect_vertices, GL_STATIC_DRAW);
+	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(rect_vertices) + sizeof(rect_uvs), rect_vertices, GL_STATIC_DRAW);
+	GL_CALL(glBufferSubData, GL_ARRAY_BUFFER, sizeof(rect_vertices), sizeof(rect_uvs), rect_uvs);
 	GL_CALL(glEnableVertexAttribArray, 0);
+	GL_CALL(glEnableVertexAttribArray, 1);
 	GL_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	GL_CALL(glVertexAttribPointer, 1, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) sizeof(rect_vertices));
 	GL_CALL(glBindVertexArray, 0);
 	GL_CALL(glDeleteBuffers, 1, &vbo);
 }
@@ -182,25 +201,44 @@ void graphics_end_frame(Window *window)
 	}
 }
 
-void graphics_add_layer(Layer *layer)
-{
-	//layer->id = graphics_data.num_layers++;
-}
-
-void graphics_draw_triangle(vec3 pos, u32 color)
+void graphics_draw_triangle(vec3 pos, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
+	texture_bind(texture);
 
 	const mat4 transformation = mat4_identity();
 	const mat4 view_projection = mat4_identity();
 	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "view_projection");
 	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "transformation");
 	GLint loc_color = glGetUniformLocation(shader_get_basic(), "color");
+	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 
 	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, transformation.M);
 	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
-	GL_CALL(glUniform4f, loc_color, 1, 0, 1, 1);
+	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
+	GL_CALL(glUniform1i, loc_diffuse, 0);
 
 	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle.vao);
 	GL_CALL(glDrawArrays, graphics_data.primitive_triangle.mode, 0, 3);
+}
+
+void graphics_draw_rect(vec3 pos, const Texture *texture, vec4 color)
+{
+	shader_bind(shader_get_basic());
+	texture_bind(texture);
+
+	const mat4 transformation = mat4_identity();
+	const mat4 view_projection = mat4_identity();
+	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "view_projection");
+	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "transformation");
+	GLint loc_color = glGetUniformLocation(shader_get_basic(), "color");
+	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
+
+	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, transformation.M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
+	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
+	GL_CALL(glUniform1i, loc_diffuse, 0);
+
+	GL_CALL(glBindVertexArray, graphics_data.primitive_rect.vao);
+	GL_CALL(glDrawArrays, graphics_data.primitive_rect.mode, 0, 4);
 }

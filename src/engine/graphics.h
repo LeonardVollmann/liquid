@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "maths.h"
+#include "texture.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -17,15 +18,5 @@ bool graphics_terminated();
 void graphics_begin_frame(Window *window);
 void graphics_end_frame(Window *window);
 
-typedef struct
-{
-	mat4 projection;
-	mat4 view;
-	float z;
-	u32 id;
-} Layer;
-
-void graphics_add_layer(Layer *layer);
-
-typedef GLuint Shader;
-void graphics_draw_triangle(vec3 pos, u32 color);
+void graphics_draw_triangle(vec3 pos, const Texture *texture, vec4 color);
+void graphics_draw_rect(vec3 pos, const Texture *texture, vec4 color);

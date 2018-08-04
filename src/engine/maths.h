@@ -24,6 +24,13 @@ typedef union
 
 typedef union
 {
+	struct { f32 x, y, z, w; };
+	struct { f32 r, g, b, a; };
+	f32 v[4];
+} vec4;
+
+typedef union
+{
 	struct { f32 w, x, y, z; };
 	f32 q[4];
 } quat;
