@@ -1,21 +1,21 @@
 #include "shader.h"
 
-#define BASIC_VSHADER_SOURCE "													\
-	#version 330 core 															\
-																				\
-	layout(location = 0) in vec3 vertex_pos;									\
-	layout(location = 1) in vec2 vertex_uv;										\
-																				\
-	out vec2 uv;																\
-																				\
-	uniform mat4 view_projection;												\
-	uniform mat4 transformation;												\
-																				\
-	void main()																	\
-	{																			\
-		uv = vertex_uv;															\
-		gl_Position = view_projection * transformation * vec4(vertex_pos, 1.0);	\
-	}																			\
+#define BASIC_VSHADER_SOURCE "														\
+	#version 330 core 																\
+																					\
+	layout(location = 0) in vec3 vertex_pos;										\
+	layout(location = 1) in vec2 vertex_uv;											\
+																					\
+	out vec2 uv;																	\
+																					\
+	uniform mat4 view_projection;													\
+	uniform mat4 transformation;													\
+																					\
+	void main()																		\
+	{																				\
+		uv = vertex_uv;																\
+		gl_Position =  transformation * view_projection * vec4(vertex_pos, 1.0);	\
+	}																				\
 "
 
 #define BASIC_FSHADER_SOURCE "									\

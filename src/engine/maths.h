@@ -52,13 +52,13 @@ typedef struct
 // 	KILOMETERS=3
 // };
 
-// Linked list is used because the transform hierarchy should be pretty static in most cases.
-// typedef struct
-// {
-// 	vec3 pos;
-// 	quat rot;
-// 	const CoordTransform *parent;
-// } CoordTransform;
+typedef struct
+{
+	vec3 pos;
+	vec3 scale;
+	quat rot;
+	// const CoordTransform *parent;
+} Transform;
 
 // @TODO: Implement a proper hierarchy data type to enable tree traversal for relative transforms
 /*struct transform_hierarchy
@@ -72,6 +72,8 @@ typedef struct
 
 /* vec3 */
 
+vec3 vec3_new(f32 x, f32 y, f32 z);
+
 vec3 vec3_add(vec3 a, vec3 b);
 vec3 vec3_sub(vec3 a, vec3 b);
 vec3 vec3_scalar_mul(vec3 a, f32 s);
@@ -83,7 +85,7 @@ f32 vec3_mag(vec3 a);
 
 /* -- quat -- */
 
-quat *quat_null_rotation(quat *q);
+quat quat_null_rotation();
 quat quat_conjugate(quat q);
 quat quat_normalize(quat q);
 quat quat_mul(quat a, quat b);
@@ -95,19 +97,23 @@ mat3 mat3_transformation(vec2 pos, f32 angle, vec2 scale);
 
 /* mat4 */
 
-mat4 mat4_identtiy();
+mat4 mat4_identity();
 mat4 *mat4_init_to_identity(mat4 *a);
-mat4 mat4_rotation_matrix_x(f32 alpha);
-mat4 mat4_rotation_matrix_y(f32 beta);
-mat4 mat4_rotation_matrix_z(f32 gamma);
+mat4 mat4_translation(vec3 pos);
+mat4 mat4_rotation_x(f32 alpha);
+mat4 mat4_rotation_y(f32 beta);
+mat4 mat4_rotation_z(f32 gamma);
 mat4 mat4_rotation_from_quat(quat q);
-
-// mat4 mat4_transformation(CoordTransform *transform);
+mat4 mat4_scale(vec3 scale);
 
 mat4 mat4_mul(const mat4 a, const mat4 b);
-mat4 mat4_proj_ortho(f32 width, f32 height, f32 near, f32 far);
 
-/* CoordTransform */
+mat4 mat4_ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
+mat4 mat4_perspective(f32 fov, f32 aspect_ratio, f32 near, f32 far);
+
+mat4 mat4_transformation(const Transform *transform);
+
+/* Transform */
 
 // CoordTransform ct_create_child_transform(const CoordTransform *parent)
 // {

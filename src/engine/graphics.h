@@ -18,5 +18,5 @@ bool graphics_terminated();
 void graphics_begin_frame(Window *window);
 void graphics_end_frame(Window *window);
 
-void graphics_draw_triangle(vec3 pos, const Texture *texture, vec4 color);
-void graphics_draw_rect(vec3 pos, const Texture *texture, vec4 color);
+void graphics_draw_triangle(const Transform *transform, mat4 projection, const Texture *texture, vec4 color);
+void graphics_draw_rect(const Transform *transform, mat4 projection, const Texture *texture, vec4 color);

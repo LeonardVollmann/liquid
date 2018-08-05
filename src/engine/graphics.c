@@ -201,20 +201,18 @@ void graphics_end_frame(Window *window)
 	}
 }
 
-void graphics_draw_triangle(vec3 pos, const Texture *texture, vec4 color)
+void graphics_draw_triangle(const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
 
-	const mat4 transformation = mat4_identity();
-	const mat4 view_projection = mat4_identity();
 	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "view_projection");
 	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "transformation");
 	GLint loc_color = glGetUniformLocation(shader_get_basic(), "color");
 	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 
-	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, transformation.M);
-	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
+	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
@@ -222,20 +220,18 @@ void graphics_draw_triangle(vec3 pos, const Texture *texture, vec4 color)
 	GL_CALL(glDrawArrays, graphics_data.primitive_triangle.mode, 0, 3);
 }
 
-void graphics_draw_rect(vec3 pos, const Texture *texture, vec4 color)
+void graphics_draw_rect(const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
 
-	const mat4 transformation = mat4_identity();
-	const mat4 view_projection = mat4_identity();
 	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "view_projection");
 	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "transformation");
 	GLint loc_color = glGetUniformLocation(shader_get_basic(), "color");
 	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 
-	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, transformation.M);
-	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
+	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
