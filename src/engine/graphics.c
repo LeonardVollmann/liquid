@@ -4,14 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct
-{
-//	GLuint vbo;
-//	GLuint ibo;
-	GLuint vao;
-	GLenum mode;
-} Model;
-
 static struct
 {
 	bool initialized;
@@ -19,8 +11,8 @@ static struct
 	GLFWwindow *windows[GRAPHICS_MAX_WINDOWS];
 	u32 indices[GRAPHICS_MAX_WINDOWS];
 
-	Model primitive_triangle;
-	Model primitive_rect;
+	GLuint primitive_triangle_vao;
+	GLuint primitive_rect_vao;
 } graphics_data;
 
 static void init_primitives()
@@ -53,9 +45,8 @@ static void init_primitives()
 
 	GLuint vbo;
 
-	graphics_data.primitive_triangle.mode = GL_TRIANGLES;
-	GL_CALL(glGenVertexArrays, 1, &graphics_data.primitive_triangle.vao);
-	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle.vao);
+	GL_CALL(glGenVertexArrays, 1, &graphics_data.primitive_triangle_vao);
+	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle_vao);
 	GL_CALL(glGenBuffers, 1, &vbo);
 	GL_CALL(glBindBuffer, GL_ARRAY_BUFFER, vbo);
 	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(triangle_vertices) + sizeof(triangle_uvs), triangle_vertices, GL_STATIC_DRAW);
@@ -67,9 +58,8 @@ static void init_primitives()
 	GL_CALL(glBindVertexArray, 0);
 	GL_CALL(glDeleteBuffers, 1, &vbo);
 
-	graphics_data.primitive_rect.mode = GL_TRIANGLE_STRIP;
-	GL_CALL(glGenVertexArrays, 1, &graphics_data.primitive_rect.vao);
-	GL_CALL(glBindVertexArray, graphics_data.primitive_rect.vao);
+	GL_CALL(glGenVertexArrays, 1, &graphics_data.primitive_rect_vao);
+	GL_CALL(glBindVertexArray, graphics_data.primitive_rect_vao);
 	GL_CALL(glGenBuffers, 1, &vbo);
 	GL_CALL(glBindBuffer, GL_ARRAY_BUFFER, vbo);
 	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(rect_vertices) + sizeof(rect_uvs), rect_vertices, GL_STATIC_DRAW);
@@ -112,7 +102,7 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	result = glfwCreateWindow(640, 480, title, NULL, NULL);
+	result = glfwCreateWindow(width, height, title, NULL, NULL);
 	if (!result)
 	{
 		glfwTerminate();
@@ -137,6 +127,12 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 		INFO("GLSL version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 		shader_load_defaults();
+		init_primitives();
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_CLAMP);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
 		graphics_data.initialized = true;
 	}
@@ -144,7 +140,7 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 	graphics_data.windows[graphics_data.indices[graphics_data.num_windows]] = result;
 	graphics_data.num_windows++;
 
-	init_primitives();
+	INFO("Created window. Title: %s, width: %d, height: %d", title, width, height);
 
 	return graphics_data.num_windows - 1;
 }
@@ -183,7 +179,7 @@ void graphics_begin_frame(Window *window)
 	if (*window != -1)
 	{
 		glfwMakeContextCurrent(graphics_data.windows[graphics_data.indices[*window]]);
-		GL_CALL(glClear, GL_COLOR_BUFFER_BIT);
+		GL_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 }
 
@@ -216,8 +212,8 @@ void graphics_draw_triangle(const Transform *transform, mat4 projection, const T
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
-	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle.vao);
-	GL_CALL(glDrawArrays, graphics_data.primitive_triangle.mode, 0, 3);
+	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle_vao);
+	GL_CALL(glDrawArrays, GL_TRIANGLES, 0, 3);
 }
 
 void graphics_draw_rect(const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
@@ -235,6 +231,25 @@ void graphics_draw_rect(const Transform *transform, mat4 projection, const Textu
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
-	GL_CALL(glBindVertexArray, graphics_data.primitive_rect.vao);
-	GL_CALL(glDrawArrays, graphics_data.primitive_rect.mode, 0, 4);
+	GL_CALL(glBindVertexArray, graphics_data.primitive_rect_vao);
+	GL_CALL(glDrawArrays, GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
+{
+	shader_bind(shader_get_basic());
+	texture_bind(texture);
+
+	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "view_projection");
+	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "transformation");
+	GLint loc_color = glGetUniformLocation(shader_get_basic(), "color");
+	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
+
+	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
+	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
+	GL_CALL(glUniform1i, loc_diffuse, 0);
+
+	GL_CALL(glBindVertexArray, mesh.vao);
+	GL_CALL(glDrawArrays, GL_TRIANGLES, 0, mesh.num_vertices);
 }

@@ -4,3 +4,4 @@
 #include "graphics.c"
 #include "shader.c"
 #include "texture.c"
+#include "obj_loading.c"

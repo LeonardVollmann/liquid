@@ -8,12 +8,14 @@
 #define sinf32(x) sinf(x)
 #define cosf32(x) cosf(x)
 
+#define MATH_PI 3.1415926535897932384626433832795
+
 /* Types */
 
 typedef union
 {
 	struct { f32 x, y; };
-	struct { f32 u, v; };
+	f32 v[2];
 } vec2;
 
 typedef union
@@ -45,13 +47,6 @@ typedef struct
 	f32 M[16];
 } mat4;
 
-// enum scale_val
-// {
-// 	MILLIMETERS=-3,
-// 	METERS=1,
-// 	KILOMETERS=3
-// };
-
 typedef struct
 {
 	vec3 pos;
@@ -82,6 +77,8 @@ f32 vec3_dot(vec3 a, vec3 b);
 vec3 vec3_cross(vec3 a, vec3 b);
 f32 vec3_mag_squared(vec3 a);
 f32 vec3_mag(vec3 a);
+
+vec4 vec4_zero();
 
 /* -- quat -- */
 

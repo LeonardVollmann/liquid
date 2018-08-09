@@ -71,6 +71,12 @@ f32 vec3_mag(vec3 a)
 	return sqrtf32(vec3_mag_squared(a));
 }
 
+vec4 vec4_zero()
+{
+	vec4 result = {0, 0, 0, 0};
+	return result;
+}
+
 /* -- quat -- */
 
 quat quat_null_rotation()
@@ -288,18 +294,11 @@ mat4 mat4_ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far)
 
 mat4 mat4_perspective(f32 fov, f32 aspect_ratio, f32 near, f32 far)
 {
-	const f32 q = 1.0f / tan(3.14f / 180.0f * (0.5f * fov));
+	const f32 q = 1.0f / tanf(MATH_PI / 180.0f * (0.5f * fov));
 	const f32 a = q / aspect_ratio;
 
 	const f32 b = (near + far) / (near - far);
 	const f32 c = (2.0f * near * far) / (near - far);
-
-	// mat4 result = {
-	// 	1.0f / (tan_half_fov * aspect_ratio), 0, 0, 0,
-	// 	0, 1.0f / tan_half_fov, 0, 0,
-	// 	0, 0, -(near + far) / z_range, 1,
-	// 	0, 0, 2.0f * far * near / z_range, 0
-	// };
 
 	mat4 result = {
 		a, 0, 0, 0,
