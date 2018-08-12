@@ -251,5 +251,6 @@ void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 projection, 
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
 	GL_CALL(glBindVertexArray, mesh.vao);
-	GL_CALL(glDrawArrays, GL_TRIANGLES, 0, mesh.num_vertices);
+	GL_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
+	GL_CALL(glDrawElements, GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, NULL);
 }

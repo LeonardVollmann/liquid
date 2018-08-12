@@ -14,8 +14,8 @@ typedef u32 Window;
 
 typedef struct
 {
-	GLuint vao;
-	u32 num_vertices;
+	GLuint vao, ibo;
+	u32 num_indices;
 } Mesh;
 
 Window graphics_create_window(u32 width, u32 height, const char *title);
