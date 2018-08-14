@@ -6,12 +6,17 @@ vec3 vec3_new(f32 x, f32 y, f32 z)
 	return result;
 }
 
+vec3 vec3_zero()
+{
+	return vec3_new(0, 0, 0);
+}
+
 vec3 vec3_add(vec3 a, vec3 b)
 {
 	vec3 result = {
 		a.x + b.x,
 		a.y + b.y,
-		a.z - b.z
+		a.z + b.z
 	};
 	return result;
 }
@@ -69,6 +74,13 @@ f32 vec3_mag_squared(vec3 a)
 f32 vec3_mag(vec3 a)
 {
 	return sqrtf32(vec3_mag_squared(a));
+}
+
+vec3 vec3_normalized(vec3 a)
+{
+	f32 mag = vec3_mag(a);
+	vec3 result = {a.x / mag, a.y / mag, a.z / mag};
+	return result;
 }
 
 vec4 vec4_zero()

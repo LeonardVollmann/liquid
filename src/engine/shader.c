@@ -8,6 +8,7 @@
 	layout(location = 2) in vec3 vertex_normal;										\
 																					\
 	out vec2 uv;																	\
+	out vec3 normal;																\
 																					\
 	uniform mat4 view_projection;													\
 	uniform mat4 transformation;													\
@@ -15,24 +16,28 @@
 	void main()																		\
 	{																				\
 		uv = vertex_uv;																\
+		normal = (transformation * vec4(vertex_normal, 0.0)).xyz;					\
 		gl_Position =  transformation * view_projection * vec4(vertex_pos, 1.0);	\
 	}																				\
 "
 
-#define BASIC_FSHADER_SOURCE "									\
-	#version 330 core 											\
-																\
-	in vec2 uv;													\
-																\
-	out vec4 frag_color;										\
-																\
-	uniform sampler2D diffuse;									\
-	uniform vec4 color;											\
-																\
-	void main()													\
-	{															\
-		frag_color = texture(diffuse, uv) + color;				\
-	}															\
+#define BASIC_FSHADER_SOURCE "													\
+	#version 330 core 															\
+																				\
+	in vec2 uv;																	\
+	in vec3 normal;																\
+																				\
+	out vec4 frag_color;														\
+																				\
+	uniform sampler2D diffuse;													\
+	uniform vec4 color;															\
+																				\
+	const vec3 light_dir = normalize(vec3(0, -1, 1));							\
+																				\
+	void main()																	\
+	{																			\
+		frag_color = dot(-light_dir, normal) * (texture(diffuse, uv) + color);	\
+	}																			\
 "
 
 static struct

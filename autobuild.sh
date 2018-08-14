@@ -37,7 +37,7 @@ do
     # Report build ok, or failure (clear if former)
     if [[ $compileOk -eq 0 ]]
     then
-        clear
+        #clear
         echo -e '[\033[1;32m Build OK\033[0m ]'
     else
         echo -e '[\033[0;31m Build Failed\033[0m ]'

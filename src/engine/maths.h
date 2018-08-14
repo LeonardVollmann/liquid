@@ -68,6 +68,7 @@ typedef struct
 /* vec3 */
 
 vec3 vec3_new(f32 x, f32 y, f32 z);
+vec3 vec3_zero();
 
 vec3 vec3_add(vec3 a, vec3 b);
 vec3 vec3_sub(vec3 a, vec3 b);
@@ -77,6 +78,7 @@ f32 vec3_dot(vec3 a, vec3 b);
 vec3 vec3_cross(vec3 a, vec3 b);
 f32 vec3_mag_squared(vec3 a);
 f32 vec3_mag(vec3 a);
+vec3 vec3_normalized(vec3 a);
 
 vec4 vec4_zero();
 

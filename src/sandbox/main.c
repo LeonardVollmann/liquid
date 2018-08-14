@@ -16,16 +16,20 @@ int main(int argc, char const *argv[])
 
 	Mesh bunny = obj_load_mesh("res/bunny.obj");
 	Mesh monkey = obj_load_mesh("res/monkey.obj");
+	Mesh dragon = obj_load_mesh("res/dragon.obj");
+	// Mesh rungholt = obj_load_mesh("res/rungholt.obj");
 
 	Texture bricks = texture_load("res/bricks.png");
 	Texture bricks2 = texture_load("res/bricks2.png");
+	// Texture rungholt_texture = texture_load("res/rungholt.png");
 
 	quat rot = quat_from_axis_angle(vec3_new(0, 0, 1), 3.14f / 4.0f);
 
 	Transform t1 = {vec3_new(0.0f, 0.0f, 0), vec3_new(0.5f, 0.5f, 1), rot};
 	Transform t2 = {vec3_new(-0.5f, -0.5f, 0), vec3_new(0.5f, 0.5f, 1), quat_null_rotation()};
-	Transform t3 = {vec3_new(-1.5, -1, -2), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
-	Transform t4 = {vec3_new(2.0, -0.8, -2), vec3_new(0.6, 0.6, 0.6), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
+	Transform t3 = {vec3_new(-1.5, -1, -3), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
+	Transform t4 = {vec3_new(2.0, -0.8, -3), vec3_new(0.6, 0.6, 0.6), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
+	Transform t5 = {vec3_new(0, 0, -2), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
 	quat q = quat_from_axis_angle(vec3_new(1, 0, 0), M_PI/2);
 	t3.rot = quat_mul(t3.rot, q);
 
@@ -51,11 +55,12 @@ int main(int argc, char const *argv[])
 		t1.rot = quat_normalize(quat_mul(t1.rot, rotation_step));
 		t3.rot = quat_mul(t3.rot, rotation_step);
 		t4.rot = t3.rot;
+		t5.rot = t3.rot;
 
-		// graphics_draw_rect(&t1, projection, &bricks, color1);
+		graphics_draw_mesh(dragon, &t5, projection, &bricks, color1);
 		graphics_draw_mesh(bunny, &t3, projection, &bricks, color1);
 		graphics_draw_mesh(monkey, &t4, projection, &bricks, color1);
-		// graphics_draw_triangle(&t2, projection, &bricks2, color2);
+		// graphics_draw_mesh(rungholt, &t5, projection, &rungholt_texture, vec4_zero());
 
 		graphics_end_frame(&window);
 	}
