@@ -50,18 +50,30 @@ int main(int argc, char const *argv[])
 		t1.pos.y = sinf(t);
 		t1.pos.z = -2.0f - sinf(2 * t);
 
-
 		quat rotation_step = quat_from_axis_angle(vec3_new(0, 1, 0), 0.02f);
 		t1.rot = quat_normalize(quat_mul(t1.rot, rotation_step));
 		t3.rot = quat_mul(t3.rot, rotation_step);
 		t4.rot = t3.rot;
 		t5.rot = t3.rot;
 
-		graphics_draw_mesh(dragon, &t5, projection, &bricks, color1);
-		graphics_draw_mesh(bunny, &t3, projection, &bricks, color1);
-		graphics_draw_mesh(monkey, &t4, projection, &bricks, color1);
+		// graphics_draw_mesh(dragon, &t5, projection, &bricks, color1);
+		// graphics_draw_mesh(bunny, &t3, projection, &bricks, color1);
+		// graphics_draw_mesh(monkey, &t4, projection, &bricks, color1);
 		// graphics_draw_mesh(rungholt, &t5, projection, &rungholt_texture, vec4_zero());
 
+		DrawMeshCommandData dmcd1 = {dragon, t5, projection, bricks, color1};
+		DrawMeshCommandData dmcd2 = {bunny, t3, projection, bricks, color1};
+		DrawMeshCommandData dmcd3 = {monkey, t4, projection, bricks, color1};
+
+		DrawCommand dc1 = {DRAW_MESH, &dmcd1};
+		DrawCommand dc2 = {DRAW_MESH, &dmcd2};
+		DrawCommand dc3 = {DRAW_MESH, &dmcd3};
+
+		graphics_submit_call(&dc1);
+		graphics_submit_call(&dc2);
+		graphics_submit_call(&dc3);
+
+		graphics_sort_and_flush_queue();
 		graphics_end_frame(&window);
 	}
 

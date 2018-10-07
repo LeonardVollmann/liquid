@@ -17,7 +17,7 @@
 	{																				\
 		uv = vertex_uv;																\
 		normal = (transformation * vec4(vertex_normal, 0.0)).xyz;					\
-		gl_Position =  transformation * view_projection * vec4(vertex_pos, 1.0);	\
+		gl_Position = view_projection * transformation * vec4(vertex_pos, 1.0);		\
 	}																				\
 "
 
@@ -32,7 +32,7 @@
 	uniform sampler2D diffuse;													\
 	uniform vec4 color;															\
 																				\
-	const vec3 light_dir = normalize(vec3(0, -1, 1));							\
+	const vec3 light_dir = normalize(vec3(1, 0, -1));							\
 																				\
 	void main()																	\
 	{																			\

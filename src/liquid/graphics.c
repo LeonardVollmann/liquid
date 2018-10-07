@@ -13,6 +13,10 @@ static struct
 
 	GLuint primitive_triangle_vao;
 	GLuint primitive_rect_vao;
+
+	size_t queue_capacity;
+	size_t queue_size;
+	DrawCommand *queue;
 } graphics_data;
 
 static void init_primitives()
@@ -140,6 +144,10 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 	graphics_data.windows[graphics_data.indices[graphics_data.num_windows]] = result;
 	graphics_data.num_windows++;
 
+	// TEMP
+	graphics_data.queue = malloc(1024 * sizeof(DrawCommand));
+	graphics_data.queue_capacity = 1024;
+
 	INFO("Created window. Title: %s, width: %d, height: %d", title, width, height);
 
 	return graphics_data.num_windows - 1;
@@ -197,6 +205,41 @@ void graphics_end_frame(Window *window)
 	}
 }
 
+void graphics_submit_call(DrawCommand *cmd)
+{
+	// @TODO: implement queue type
+	graphics_data.queue[graphics_data.queue_size] = *cmd;
+	graphics_data.queue_size += 1;
+}
+
+static void exexute_draw_command(DrawCommand cmd)
+{
+	if (cmd.type == DRAW_TRIANGLE) {
+		DrawTriangleCommandData *data = (DrawTriangleCommandData *) cmd.data;
+		graphics_draw_triangle(&data->transform, data->projection, &data->texture, data->color);
+	} else if (cmd.type == DRAW_RECT) {
+		DrawRectCommandData *data = (DrawRectCommandData *) cmd.data;
+		graphics_draw_rect(&data->transform, data->projection, &data->texture, data->color);
+	} else if (cmd.type == DRAW_MESH) {
+		DrawMeshCommandData *data = (DrawMeshCommandData *) cmd.data;
+		graphics_draw_mesh(data->mesh, &data->transform, data->projection, &data->texture, data->color);
+	} else {
+		FATAL("Unknown draw command type: %d", cmd.type);
+	}
+}
+
+void graphics_sort_and_flush_queue()
+{
+	// @TODO: key generation and sorting
+
+	// Flushing
+	for (u32 i = 0; i < graphics_data.queue_size; i++) {
+		exexute_draw_command(graphics_data.queue[i]);
+	}
+
+	graphics_data.queue_size = 0;
+}
+
 void graphics_draw_triangle(const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
@@ -240,8 +283,8 @@ void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 projection, 
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
 
-	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "view_projection");
-	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "transformation");
+	GLint loc_transformation = glGetUniformLocation(shader_get_basic(), "transformation");
+	GLint loc_view_projection = glGetUniformLocation(shader_get_basic(), "view_projection");
 	GLint loc_color = glGetUniformLocation(shader_get_basic(), "color");
 	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 

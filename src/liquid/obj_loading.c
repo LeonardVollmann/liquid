@@ -142,6 +142,9 @@ static RawOBJData parse_obj(char *text)
 {
 	RawOBJData result;
 
+	result.has_normals = false;
+	result.has_uvs = false;
+
 	size_t vertex_capacity = OBJMODEL_INITIAL_VERTEX_CAPACITY;
 	size_t index_capacity = OBJMODEL_INITIAL_INDEX_CAPACITY;
 	size_t face_capacity = OBJMODEL_INITIAL_VERTEX_CAPACITY / 3;
