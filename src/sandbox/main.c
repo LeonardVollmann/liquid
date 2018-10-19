@@ -26,15 +26,17 @@ int main(int argc, char const *argv[])
 	quat rot = quat_from_axis_angle(vec3_new(0, 0, 1), 3.14f / 4.0f);
 
 	Transform t1 = {vec3_new(0.0f, 0.0f, 0), vec3_new(0.5f, 0.5f, 1), rot};
-	Transform t2 = {vec3_new(-0.5f, -0.5f, 0), vec3_new(0.5f, 0.5f, 1), quat_null_rotation()};
+	Transform t2 = {vec3_new(200.0f, 200.0f, 1.0f), vec3_new(1, 1, 1), quat_null_rotation()};
 	Transform t3 = {vec3_new(-1.5, -1, -3), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
 	Transform t4 = {vec3_new(2.0, -0.8, -3), vec3_new(0.6, 0.6, 0.6), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
 	Transform t5 = {vec3_new(0, 0, -2), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
 	quat q = quat_from_axis_angle(vec3_new(1, 0, 0), M_PI/2);
 	t3.rot = quat_mul(t3.rot, q);
 
-	// mat4 projection = mat4_ortho(-1, 1, -1, 1, 0.0f, 100);
-	mat4 projection = mat4_perspective(70.0f, width/height, 0.01f, 1000.0f);
+	mat4 ortho = mat4_ortho(0, 1280, 720, 0, -1.0f, 100.0f);
+	mat4 projection = mat4_perspective(70.0f, width/height, 0.0f, 1000.0f);
+
+	Font font = font_load("res/Courier New.ttf", 32.0f);
 
 	f32 t = 0;
 	while (!graphics_terminated())
@@ -53,6 +55,7 @@ int main(int argc, char const *argv[])
 		quat rotation_step = quat_from_axis_angle(vec3_new(0, 1, 0), 0.02f);
 		t1.rot = quat_normalize(quat_mul(t1.rot, rotation_step));
 		t3.rot = quat_mul(t3.rot, rotation_step);
+		// t2.rot = t3.rot;
 		t4.rot = t3.rot;
 		t5.rot = t3.rot;
 
@@ -73,7 +76,10 @@ int main(int argc, char const *argv[])
 		graphics_submit_call(&dc2);
 		graphics_submit_call(&dc3);
 
+		graphics_draw_text("Hello World", font, &t2, ortho);
+
 		graphics_sort_and_flush_queue();
+
 		graphics_end_frame(&window);
 	}
 

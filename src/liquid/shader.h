@@ -16,3 +16,4 @@ void shader_load_defaults();
 void shader_destroy_defaults();
 
 Shader shader_get_basic();
+Shader shader_get_text();

@@ -28,6 +28,24 @@ Texture texture_load(const char *path)
 	return result;
 }
 
+void texture_init(Texture *texture, i32 width, i32 height, GLenum format, GLenum type, u8 *image)
+{
+	texture->data = image;
+	texture->width = width;
+	texture->height = height;
+
+	GL_CALL(glGenTextures, 1, &texture->id);
+	GL_CALL(glBindTexture, GL_TEXTURE_2D, texture->id);
+	
+	GL_CALL(glTexImage2D, GL_TEXTURE_2D, 0, format, texture->width, texture->height, 0, format, type, image);
+
+	GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
 void texture_destroy(Texture *texture)
 {
 	GL_CALL(glDeleteTextures, 1, &texture->id);

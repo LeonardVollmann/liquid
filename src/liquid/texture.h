@@ -15,5 +15,6 @@ typedef struct
 } Texture;
 
 Texture texture_load(const char *path);
+void texture_init(Texture *texture, i32 width, i32 height, GLenum format, GLenum type, u8 *image);
 void texture_destroy(Texture *texture);
 void texture_bind(const Texture *texture);

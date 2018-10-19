@@ -299,7 +299,7 @@ mat4 mat4_ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far)
 		2.0f / (right - left), 0, 0, 0,
 		0, 2.0f / (top - bottom), 0, 0,
 		0, 0, 2.0f / (near - far), 0,
-		(left + right) / (left - right), (bottom + top) / (bottom - top), (far + near) / (near - far), 1
+		(left + right) / (left - right), (bottom + top) / (bottom - top), (far + near) / (far - near), 1
 	};
 	return result;
 }

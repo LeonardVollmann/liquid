@@ -40,9 +40,45 @@
 	}																			\
 "
 
+#define TEXT_VSHADER_SOURCE "														\
+	#version 330 core 																\
+																					\
+	layout(location = 0) in vec2 vertex_pos;										\
+	layout(location = 1) in vec2 vertex_uv;											\
+																					\
+	out vec2 uv;																	\
+																					\
+	uniform mat4 view_projection;													\
+	uniform mat4 transformation;													\
+																					\
+	void main()																		\
+	{																				\
+		uv = vertex_uv;																\
+		gl_Position = view_projection * transformation * vec4(vertex_pos, 0.0, 1.0);\
+	}																				\
+"
+
+#define TEXT_FSHADER_SOURCE "						\
+	#version 330 core 								\
+													\
+	in vec2 uv;										\
+													\
+	out vec4 frag_color;							\
+													\
+	uniform sampler2D diffuse;						\
+	uniform vec4 color;								\
+													\
+													\
+	void main()										\
+	{												\
+		frag_color = vec4(1, 1, 1, 1) * texture(diffuse, uv).r; \
+	}												\
+"
+
 static struct
 {
 	Shader basic;
+	Shader text;
 } default_shaders;
 
 static char *load_source_from_file(const char *path)
@@ -142,16 +178,23 @@ void shader_bind(Shader shader)
 void shader_load_defaults()
 {
 	default_shaders.basic = shader_create(BASIC_VSHADER_SOURCE, BASIC_FSHADER_SOURCE, "basic_vs", "basic_fs");
+	default_shaders.text = shader_create(TEXT_VSHADER_SOURCE, TEXT_FSHADER_SOURCE, "text_vs", "text_fs");
 	INFO("Loaded default shaders.");
 }
 
 void shader_destroy_defaults()
 {
 	shader_destroy(&default_shaders.basic);
+	shader_destroy(&default_shaders.text);
 	INFO("Destroyed default shaders.");
 }
 
 Shader shader_get_basic()
 {
 	return default_shaders.basic;
+}
+
+Shader shader_get_text()
+{
+	return default_shaders.text;
 }

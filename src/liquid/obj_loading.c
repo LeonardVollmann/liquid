@@ -45,18 +45,18 @@ typedef struct
 	u32 num_indices;
 } IndexedModel;
 
-static char *get_file_contents(const char *path)
-{
-	FILE *f = fopen(path, "rb");
-	fseek(f, 0, SEEK_END);
-	u64 size = ftell(f);
-	fseek(f, 0, SEEK_SET);
-	char *text = malloc(size + 1);
-	fread(text, size, 1, f);
-	fclose(f);
-	text[size] = 0;
-	return text;
-}
+// static char *get_file_contents(const char *path)
+// {
+// 	FILE *f = fopen(path, "rb");
+// 	fseek(f, 0, SEEK_END);
+// 	u64 size = ftell(f);
+// 	fseek(f, 0, SEEK_SET);
+// 	char *text = malloc(size + 1);
+// 	fread(text, size, 1, f);
+// 	fclose(f);
+// 	text[size] = 0;
+// 	return text;
+// }
 
 static char *advance_to_space(char *ptr)
 {
