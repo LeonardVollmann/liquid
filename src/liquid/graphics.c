@@ -4,8 +4,43 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb/stb_truetype.h"
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>	
+
 #include <stdio.h>
 #include <stdlib.h>
+
+typedef struct
+{
+	Transform transform;
+	mat4 projection;
+	Texture texture;
+	vec4 color;
+} DrawTriangleCommandData;
+
+typedef struct
+{
+	Transform transform;
+	mat4 projection;
+	Texture texture;
+	vec4 color;
+} DrawRectCommandData;
+
+typedef struct
+{
+	Mesh mesh;
+	Transform transform;
+	mat4 projection;
+	Texture texture;
+	vec4 color;
+} DrawMeshCommandData;
+
+typedef struct
+{
+	Transform transform;
+	mat4 projection;
+	Font font;
+} DrawTextCommandData;
 
 static struct
 {
@@ -175,6 +210,10 @@ void graphics_destroy_window(Window *window)
 	}
 }
 
+void *graphics_get_window_pointer(Window window) {
+	return graphics_data.windows[window];
+}
+
 bool graphics_terminated()
 {
 	return graphics_data.initialized && !graphics_data.num_windows;
@@ -337,7 +376,7 @@ void graphics_draw_text(const char *text, Font font, Transform *transform, mat4 
 	f32 y = 0.0f;
 	u32 i = 0;
 	while (text[i]) {
-		if (text[i] >= 32 && text[i] < 128) {
+		if (text[i] >= 32 /*&& text[i] < 128*/) {
 			stbtt_aligned_quad q;
 			stbtt_GetBakedQuad(font.char_data, 512, 512, text[i] - 32, &x, &y, &q, 1);
 
@@ -382,7 +421,7 @@ Font font_load(const char *path, f32 size)
 	char *ttf_buffer = get_file_contents(path);
 
 	Font result;
-	stbtt_BakeFontBitmap(ttf_buffer, 0, size, temp_bitmap, 512, 512, 32, 96, result.char_data);
+	stbtt_BakeFontBitmap((const unsigned char *) ttf_buffer, 0, size, temp_bitmap, 512, 512, 32, 96, result.char_data);
 	texture_init(&result.texture, 512, 512, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap);
 
 	free(ttf_buffer);

@@ -6,9 +6,6 @@
 
 #include "stb/stb_truetype.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 #define GRAPHICS_MAX_WINDOWS 16
 #define GRAPHICS_MAX_LAYERS 32
 
@@ -40,41 +37,9 @@ typedef struct
 	void *data;
 } DrawCommand;
 
-typedef struct
-{
-	Transform transform;
-	mat4 projection;
-	Texture texture;
-	vec4 color;
-} DrawTriangleCommandData;
-
-typedef struct
-{
-	Transform transform;
-	mat4 projection;
-	Texture texture;
-	vec4 color;
-} DrawRectCommandData;
-
-typedef struct
-{
-	Mesh mesh;
-	Transform transform;
-	mat4 projection;
-	Texture texture;
-	vec4 color;
-} DrawMeshCommandData;
-
-typedef struct
-{
-	Transform transform;
-	mat4 projection;
-	Font font;
-
-} DrawTextCommandData;
-
 Window graphics_create_window(u32 width, u32 height, const char *title);
 void graphics_destroy_window(Window *window);
+void *graphics_get_window_pointer(Window window);
 bool graphics_terminated();
 void graphics_begin_frame(Window *window);
 void graphics_end_frame(Window *window);

@@ -2,7 +2,7 @@
 
 # This is from http://swarminglogic.com/article/2013_06_cpp_setup
 
-commnd='find ./src/engine ./src/sandbox
+commnd='find ./src/liquid ./src/sandbox ./src/asset_compile
  -name "[!\.]*.cpp" -or
  -name "[!\.]*.c" -or
  -name "[!\.]*.h"   -or

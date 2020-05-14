@@ -235,7 +235,7 @@ static void calc_normals(IndexedModel model)
 	for (u32 i = 0; i < model.num_indices / 3; i++) {
 		u32 i0 = model.indices[i * 3 + 0];
 		u32 i1 = model.indices[i * 3 + 1];
-		u32 i2 = model.indices[i * 3+ 2];
+		u32 i2 = model.indices[i * 3 + 2];
 
 		vec3 d1 = vec3_sub(model.vertices[i1].pos, model.vertices[i0].pos);
 		vec3 d2 = vec3_sub(model.vertices[i2].pos, model.vertices[i0].pos);

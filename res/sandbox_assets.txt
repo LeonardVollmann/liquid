@@ -1,0 +1,10 @@
+bricks 	IMAGE res/bricks.png
+bricks2	IMAGE res/bricks.png
+
+bunny MODEL res/bunny.obj
+
+
+
+monkey MODEL res/monkey.obj
+
+dragon MODEL res/dragon.obj

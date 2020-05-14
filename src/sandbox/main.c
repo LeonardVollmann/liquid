@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "obj_loading.h"
+#include "input.h"
 
 int main(int argc, char const *argv[])
 {
@@ -13,6 +14,7 @@ int main(int argc, char const *argv[])
 	const f32 height = 720;
 
 	Window window = graphics_create_window(width, height, "Window");
+	input_initialize(graphics_get_window_pointer(window));
 
 	Mesh bunny = obj_load_mesh("res/bunny.obj");
 	Mesh monkey = obj_load_mesh("res/monkey.obj");
@@ -30,13 +32,14 @@ int main(int argc, char const *argv[])
 	Transform t3 = {vec3_new(-1.5, -1, -3), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
 	Transform t4 = {vec3_new(2.0, -0.8, -3), vec3_new(0.6, 0.6, 0.6), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
 	Transform t5 = {vec3_new(0, 0, -2), vec3_new(1, 1, 1), quat_from_axis_angle(vec3_new(-1, 0, 0), M_PI/2.0f)};
+	Transform t6 = {vec3_new(200.0f, 250.0f, 1.0f), vec3_new(1, 1, 1), quat_null_rotation()};
 	quat q = quat_from_axis_angle(vec3_new(1, 0, 0), M_PI/2);
 	t3.rot = quat_mul(t3.rot, q);
 
 	mat4 ortho = mat4_ortho(0, 1280, 720, 0, -1.0f, 100.0f);
 	mat4 projection = mat4_perspective(70.0f, width/height, 0.0f, 1000.0f);
 
-	Font font = font_load("res/Courier New.ttf", 32.0f);
+	Font font = font_load("res/CourierNew.ttf", 32.0f);
 
 	f32 t = 0;
 	while (!graphics_terminated())
@@ -59,28 +62,35 @@ int main(int argc, char const *argv[])
 		t4.rot = t3.rot;
 		t5.rot = t3.rot;
 
-		// graphics_draw_mesh(dragon, &t5, projection, &bricks, color1);
-		// graphics_draw_mesh(bunny, &t3, projection, &bricks, color1);
-		// graphics_draw_mesh(monkey, &t4, projection, &bricks, color1);
-		// graphics_draw_mesh(rungholt, &t5, projection, &rungholt_texture, vec4_zero());
+		float speed = 0.1f;
+		if (input_get_key(GLFW_KEY_W))
+		{
+			t5.pos.z -= speed;
+		}
+		else if (input_get_key(GLFW_KEY_S))
+		{
+			t5.pos.z += speed;
+		}
+		else if (input_get_key(GLFW_KEY_A))
+		{
+			t5.pos.x -= speed;
+		}
+		else if (input_get_key(GLFW_KEY_D)) 
+		{
+			t5.pos.x += speed;
+		}
 
-		DrawMeshCommandData dmcd1 = {dragon, t5, projection, bricks, color1};
-		DrawMeshCommandData dmcd2 = {bunny, t3, projection, bricks, color1};
-		DrawMeshCommandData dmcd3 = {monkey, t4, projection, bricks, color1};
-
-		DrawCommand dc1 = {DRAW_MESH, &dmcd1};
-		DrawCommand dc2 = {DRAW_MESH, &dmcd2};
-		DrawCommand dc3 = {DRAW_MESH, &dmcd3};
-
-		graphics_submit_call(&dc1);
-		graphics_submit_call(&dc2);
-		graphics_submit_call(&dc3);
-
+		graphics_draw_mesh(dragon, &t5, projection, &bricks, color1);
+		graphics_draw_mesh(bunny, &t3, projection, &bricks, color1);
+		graphics_draw_mesh(monkey, &t4, projection, &bricks, color1);
 		graphics_draw_text("Hello World", font, &t2, ortho);
+		graphics_draw_text("It's me, Leonard", font, &t6, ortho);
 
 		graphics_sort_and_flush_queue();
 
 		graphics_end_frame(&window);
+
+		input_update();
 	}
 
 	return 0;

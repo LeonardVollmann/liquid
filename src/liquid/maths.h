@@ -65,7 +65,21 @@ typedef struct
 	u32 *level;
 };*/
 
-/* vec3 */
+/* -- vec2 -- */
+
+vec2 vec2_new(f32 x, f32 y);
+vec2 vec2_zero();
+
+vec2 vec2_add(vec2 a, vec2 b);
+vec2 vec2_sub(vec2 a, vec2 b);
+vec2 vec2_scalar_mul(vec2 a, f32 s);
+vec2 vec2_scalar_div(vec2 a, f32 s);
+f32 vec2_dot(vec2 a, vec2 b);
+f32 vec2_mag_squared(vec2 a);
+f32 vec2_mag(vec2 a);
+vec2 vec2_normalized(vec2 a);
+
+/* -- vec3 -- */
 
 vec3 vec3_new(f32 x, f32 y, f32 z);
 vec3 vec3_zero();
@@ -80,7 +94,19 @@ f32 vec3_mag_squared(vec3 a);
 f32 vec3_mag(vec3 a);
 vec3 vec3_normalized(vec3 a);
 
+/* -- vec4 -- */
+
+vec4 vec4_new(f32 x, f32 y, f32 z, f32 w);
 vec4 vec4_zero();
+
+vec4 vec4_add(vec4 a, vec4 b);
+vec4 vec4_sub(vec4 a, vec4 b);
+vec4 vec4_scalar_mul(vec4 a, f32 s);
+vec4 vec4_scalar_div(vec4 a, f32 s);
+f32 vec4_dot(vec4 a, vec4 b);
+f32 vec4_mag_squared(vec4 a);
+f32 vec4_mag(vec4 a);
+vec4 vec4_normalized(vec4 a);
 
 /* -- quat -- */
 

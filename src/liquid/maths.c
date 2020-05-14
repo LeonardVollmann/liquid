@@ -1,5 +1,78 @@
 #include "maths.h"
 
+/* -- vec2 -- */
+
+vec2 vec2_new(f32 x, f32 y)
+{
+	vec2 result = {x, y};
+	return result;
+}
+
+vec2 vec2_zero()
+{
+	return vec2_new(0, 0);
+}
+
+vec2 vec2_add(vec2 a, vec2 b)
+{
+	vec2 result = {
+		a.x + b.x,
+		a.y + b.y
+	};
+	return result;
+}
+
+vec2 vec2_sub(vec2 a, vec2 b)
+{
+	vec2 result = {
+		a.x - b.x,
+		a.y - b.y
+	};
+	return result;
+}
+
+vec2 vec2_scalar_mul(vec2 a, f32 s)
+{
+	vec2 result = {
+		a.x * s,
+		a.y * s
+	};
+	return result;
+}
+
+vec2 vec2_scalar_div(vec2 a, f32 s)
+{
+	vec2 result = {
+		a.x / s,
+		a.y / s
+	};
+	return result;
+}
+
+f32 vec2_dot(vec2 a, vec2 b)
+{
+	return a.x * b.x + a.y * b.y;
+}
+
+f32 vec2_mag_squared(vec2 a)
+{
+	return vec2_dot(a, a);
+}
+
+f32 vec2_mag(vec2 a)
+{
+	return sqrtf32(vec2_mag_squared(a));
+}
+
+vec2 vec2_normalized(vec2 a)
+{
+	f32 mag = vec2_mag(a);
+	vec2 result = {a.x / mag, a.y / mag};
+	return result;
+}
+
+/* -- vec3 -- */
+
 vec3 vec3_new(f32 x, f32 y, f32 z)
 {
 	vec3 result = {x, y, z};
@@ -83,9 +156,82 @@ vec3 vec3_normalized(vec3 a)
 	return result;
 }
 
+/* -- vec4 -- */
+
+vec4 vec4_new(f32 x, f32 y, f32 z, f32 w)
+{
+	vec4 result = {x, y, z, w};
+	return result;
+}
+
 vec4 vec4_zero()
 {
-	vec4 result = {0, 0, 0, 0};
+	return vec4_new(0, 0, 0, 0);
+}
+
+vec4 vec4_add(vec4 a, vec4 b)
+{
+	vec4 result = {
+		a.x + b.x,
+		a.y + b.y,
+		a.z + b.z,
+		a.w + b.w
+	};
+	return result;
+}
+
+vec4 vec4_sub(vec4 a, vec4 b)
+{
+	vec4 result = {
+		a.x - b.x,
+		a.y - b.y,
+		a.z - b.z,
+		a.w - b.w
+	};
+	return result;
+}
+
+vec4 vec4_scalar_mul(vec4 a, f32 s)
+{
+	vec4 result = {
+		a.x * s,
+		a.y * s,
+		a.z * s,
+		a.w * s
+	};
+	return result;
+}
+
+vec4 vec4_scalar_div(vec4 a, f32 s)
+{
+	vec4 result = {
+		a.x / s,
+		a.y / s,
+		a.z / s,
+		a.w / s
+	};
+	return result;
+}
+
+f32 vec4_dot(vec4 a, vec4 b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+f32 vec4_mag_squared(vec4 a)
+{
+	return vec4_dot(a, a);
+}
+
+f32 vec4_mag(vec4 a)
+{
+	return sqrtf32(vec4_mag_squared(a));
+}
+
+vec4 vec4_normalized(vec4 a)
+{
+	f32 mag = vec4_mag(a);
+	vec4 result = {a.x / mag, a.y / mag, a.z / mag, a.w / mag};
 	return result;
 }
 
