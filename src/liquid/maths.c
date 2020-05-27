@@ -256,7 +256,7 @@ quat quat_conjugate(quat q)
 quat quat_normalize(quat q)
 {
 	quat result;
-	f32 mag = sqrtf32(q.w * q.w * q.x * q.x + q.y + q.y + q.z * q.z); 
+	f32 mag = sqrtf32(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z); 
 	result.w = q.w / mag;
 	result.x = q.x / mag;
 	result.y = q.y / mag;
@@ -294,12 +294,12 @@ vec3 quat_rotate(quat q, vec3 v)
 	return result;
 }
 
-quat quat_from_axis_angle(vec3 axis, float angle)
+quat quat_from_axis_angle(vec3 axis, f32 angle)
 {
 	quat result = {};
 
-	float sin_half_angle = sinf32(0.5f * angle);
-	float cos_half_angle = cosf32(0.5f * angle);
+	f32 sin_half_angle = sinf32(0.5f * angle);
+	f32 cos_half_angle = cosf32(0.5f * angle);
 
 	result.w = cos_half_angle;
 	result.x = axis.x * sin_half_angle;
@@ -307,6 +307,54 @@ quat quat_from_axis_angle(vec3 axis, float angle)
 	result.z = axis.z * sin_half_angle;
 
 	return result;
+}
+
+quat quat_from_euler_angles(f32 yaw, f32 pitch, f32 roll) // z, y, x
+{
+	f32 cy = cosf32(yaw * 0.5);
+    f32 sy = sinf32(yaw * 0.5);
+    f32 cp = cosf32(pitch * 0.5);
+    f32 sp = sinf32(pitch * 0.5);
+    f32 cr = cosf32(roll * 0.5);
+    f32 sr = sinf32(roll * 0.5);
+
+    quat result = {
+    	cr * cp * cy + sr * sp * sy,
+    	sr * cp * cy - cr * sp * sy,
+    	cr * sp * cy + sr * cp * sy,
+    	cr * cp * sy - sr * sp * cy
+    };
+    return result;
+}
+
+vec3 quat_get_forward(quat q)
+{
+	return quat_rotate(q, vec3_new(0, 0, 1));
+}
+
+vec3 quat_get_back(quat q)
+{
+	return quat_rotate(q, vec3_new(0, 0, -1));
+}
+
+vec3 quat_get_up(quat q)
+{
+	return quat_rotate(q, vec3_new(0, 1, 0));
+}
+
+vec3 quat_get_down(quat q)
+{
+	return quat_rotate(q, vec3_new(0, -1, 0));
+}
+
+vec3 quat_get_right(quat q)
+{
+	return quat_rotate(q, vec3_new(1, 0, 0));
+}
+
+vec3 quat_get_left(quat q)
+{
+	return quat_rotate(q, vec3_new(-1, 0, 0));
 }
 
 /* mat3 */
@@ -396,13 +444,9 @@ mat4 mat4_rotation_z(f32 gamma)
 
 mat4 mat4_rotation_from_quat(quat q)
 {
-	static const vec3 z = {0, 0, 1};
-	static const vec3 y = {0, 1, 0};
-	static const vec3 x = {1, 0, 0};
-
-	const vec3 f = quat_rotate(q, z);
-	const vec3 u = quat_rotate(q, y);
-	const vec3 r = quat_rotate(q, x);
+	const vec3 f = quat_get_forward(q);
+	const vec3 u = quat_get_up(q);
+	const vec3 r = quat_get_right(q);
 
 	mat4 result = {
 		r.x, r.y, r.z, 0,
@@ -483,4 +527,32 @@ mat4 mat4_transformation(const Transform *transform)
 									mat4_translation(transform->pos)),
 									mat4_scale(transform->scale));
 	return result;
+}
+
+mat4 mat4_camera_view(const Transform *transform)
+{
+	mat4 result = mat4_mul(mat4_translation(vec3_scalar_mul(transform->pos, -1.0f)), mat4_rotation_from_quat(quat_conjugate(transform->rot)));
+	return result;	
+}
+
+void transform_translate(Transform *transform, vec3 amount)
+{
+	transform->pos = vec3_add(transform->pos, amount);
+}
+
+void transform_scale(Transform *transform, vec3 amount)
+{
+	transform->scale.x *= amount.x;
+	transform->scale.y *= amount.y;
+	transform->scale.z *= amount.z;
+}
+
+void transform_rotate(Transform *transform, quat rot)
+{
+	transform->rot = quat_normalize(quat_mul(rot, transform->rot));
+}
+
+void transform_rotate_axis_angle(Transform *transform, vec3 axis, f32 angle)
+{
+	transform_rotate(transform, quat_from_axis_angle(axis, angle));
 }

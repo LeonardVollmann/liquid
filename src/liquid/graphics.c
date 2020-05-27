@@ -210,7 +210,7 @@ void graphics_destroy_window(Window *window)
 	}
 }
 
-void *graphics_get_window_pointer(Window window) {
+void *graphics_get_window_ptr(Window window) {
 	return graphics_data.windows[window];
 }
 
@@ -239,12 +239,26 @@ void graphics_end_frame(Window *window)
 	{
 		glfwMakeContextCurrent(graphics_data.windows[graphics_data.indices[*window]]);
 		glfwSwapBuffers(graphics_data.windows[graphics_data.indices[*window]]);
-		glfwPollEvents();
 
 		if (window_should_close(window)) {
 			graphics_destroy_window(window);
 		}
 	}
+}
+
+void graphics_hide_cursor(Window window)
+{
+	glfwSetInputMode(graphics_data.windows[window], GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void graphics_disable_cursor(Window window)
+{
+	glfwSetInputMode(graphics_data.windows[window], GLFW_CURSOR, GLFW_CURSOR_DISABLED);	
+}
+
+void graphics_show_cursor(Window window)
+{
+	glfwSetInputMode(graphics_data.windows[window], GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void graphics_submit_call(DrawCommand *cmd)
@@ -282,7 +296,7 @@ void graphics_sort_and_flush_queue()
 	graphics_data.queue_size = 0;
 }
 
-void graphics_draw_triangle(const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
+void graphics_draw_triangle(const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
@@ -293,7 +307,7 @@ void graphics_draw_triangle(const Transform *transform, mat4 projection, const T
 	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 
 	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
-	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
@@ -301,7 +315,7 @@ void graphics_draw_triangle(const Transform *transform, mat4 projection, const T
 	GL_CALL(glDrawArrays, GL_TRIANGLES, 0, 3);
 }
 
-void graphics_draw_rect(const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
+void graphics_draw_rect(const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
@@ -312,7 +326,7 @@ void graphics_draw_rect(const Transform *transform, mat4 projection, const Textu
 	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 
 	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
-	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
@@ -320,7 +334,7 @@ void graphics_draw_rect(const Transform *transform, mat4 projection, const Textu
 	GL_CALL(glDrawArrays, GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 projection, const Texture *texture, vec4 color)
+void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
@@ -331,7 +345,7 @@ void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 projection, 
 	GLint loc_diffuse = glGetUniformLocation(shader_get_basic(), "diffuse");
 
 	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
-	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
@@ -353,7 +367,7 @@ static char *get_file_contents(const char *path) // @TODO: centralize this funct
 	return text;
 }
 
-void graphics_draw_text(const char *text, Font font, Transform *transform, mat4 projection)
+void graphics_draw_text(const char *text, Font font, Transform *transform, mat4 view_projection)
 {
 	shader_bind(shader_get_text());
 	texture_bind(&font.texture);
@@ -365,7 +379,7 @@ void graphics_draw_text(const char *text, Font font, Transform *transform, mat4 
 
 	vec4 color;
 	GL_CALL(glUniformMatrix4fv, loc_transformation, 1, GL_FALSE, mat4_transformation(transform).M);
-	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, projection.M);
+	GL_CALL(glUniformMatrix4fv, loc_view_projection, 1, GL_FALSE, view_projection.M);
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
@@ -432,4 +446,9 @@ Font font_load(const char *path, f32 size)
 void font_destroy(Font *font)
 {
 	// @TODO: Implement
+}
+
+mat4 camera_view_projection(const Camera *camera)
+{
+	return mat4_mul(mat4_camera_view(&camera->transform), camera->projection);
 }

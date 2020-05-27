@@ -115,6 +115,14 @@ quat quat_conjugate(quat q);
 quat quat_normalize(quat q);
 quat quat_mul(quat a, quat b);
 quat quat_from_axis_angle(vec3 axis, float angle);
+quat quat_from_euler_angles(f32 roll, f32 yaw, f32 pitch);
+
+vec3 quat_get_forward(quat q);
+vec3 quat_get_back(quat q);
+vec3 quat_get_up(quat q);
+vec3 quat_get_down(quat q);
+vec3 quat_get_right(quat q);
+vec3 quat_get_left(quat q);
 
 /* mat3 */
 
@@ -137,8 +145,14 @@ mat4 mat4_ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
 mat4 mat4_perspective(f32 fov, f32 aspect_ratio, f32 near, f32 far);
 
 mat4 mat4_transformation(const Transform *transform);
+mat4 mat4_camera_view(const Transform *transform);
 
 /* Transform */
+
+void transform_translate(Transform *transform, vec3 amount);
+void transform_scale(Transform *transform, vec3 amount);
+void transform_rotate(Transform *transform, quat rot);
+void transform_rotate_axis_angle(Transform *transform, vec3 axis, f32 angle);
 
 // CoordTransform ct_create_child_transform(const CoordTransform *parent)
 // {
