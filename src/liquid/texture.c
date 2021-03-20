@@ -51,6 +51,9 @@ void texture_destroy(Texture *texture)
 	GL_CALL(glDeleteTextures, 1, &texture->id);
 	stbi_image_free(texture->data);
 	texture->data = NULL;
+	texture->width = 0;
+	texture->height = 0;
+	texture->comps_per_pixel = 0;
 }
 
 void texture_bind(const Texture *texture)

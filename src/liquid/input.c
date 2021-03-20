@@ -70,7 +70,6 @@ void input_update(Window window)
 	glfwGetCursorPos((GLFWwindow *) graphics_get_window_ptr(window), &xpos, &ypos);
 	input_data.cursor_pos.x = (f32) xpos;
 	input_data.cursor_pos.y = (f32) ypos;
-	INFO("%f", xpos);
 }
 
 bool input_get_key(i32 key)

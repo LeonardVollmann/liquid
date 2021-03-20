@@ -58,21 +58,21 @@
 	}																				\
 "
 
-#define TEXT_FSHADER_SOURCE "						\
-	#version 330 core 								\
-													\
-	in vec2 uv;										\
-													\
-	out vec4 frag_color;							\
-													\
-	uniform sampler2D diffuse;						\
-	uniform vec4 color;								\
-													\
-													\
-	void main()										\
-	{												\
+#define TEXT_FSHADER_SOURCE "									\
+	#version 330 core 											\
+																\
+	in vec2 uv;													\
+																\
+	out vec4 frag_color;										\
+																\
+	uniform sampler2D diffuse;									\
+	uniform vec4 color;											\
+																\
+																\
+	void main()													\
+	{															\
 		frag_color = vec4(1, 1, 1, 1) * texture(diffuse, uv).r; \
-	}												\
+	}															\
 "
 
 static struct

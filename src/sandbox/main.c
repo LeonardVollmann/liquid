@@ -20,14 +20,14 @@ int main(int argc, char const *argv[])
 	Window window = graphics_create_window(width, height, "Window");
 	input_initialize(window);
 
-	Mesh bunny = obj_load_mesh("res/bunny.obj");
-	Mesh monkey = obj_load_mesh("res/monkey.obj");
-	Mesh dragon = obj_load_mesh("res/dragon.obj");
-	// Mesh rungholt = obj_load_mesh("res/rungholt.obj");
+	Mesh bunny = obj_load_mesh("res/sandbox/bunny.obj");
+	Mesh monkey = obj_load_mesh("res/sandbox/monkey.obj");
+	Mesh dragon = obj_load_mesh("res/sandbox/dragon.obj");
+	// Mesh rungholt = obj_load_mesh("res/sandbox/rungholt.obj");
 
-	Texture bricks = texture_load("res/bricks.png");
-	Texture bricks2 = texture_load("res/bricks2.png");
-	// Texture rungholt_texture = texture_load("res/rungholt.png");
+	Texture bricks = texture_load("res/sandbox/bricks.png");
+	Texture bricks2 = texture_load("res/sandbox/bricks2.png");
+	// Texture rungholt_texture = texture_load("res/sandbox/rungholt.png");
 
 	quat rot = quat_from_axis_angle(vec3_new(0, 0, 1), 3.14f / 4.0f);
 
@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
 
 	Camera camera = {t1, projection};
 
-	Font font = font_load("res/CourierNew.ttf", 32.0f);
+	Font font = font_load("res/sandbox/CourierNew.ttf", 32.0f);
 
 	bool mouse_control = false;
 	f32 turn_speed = 0.005f;

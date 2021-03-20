@@ -445,7 +445,7 @@ Font font_load(const char *path, f32 size)
 
 void font_destroy(Font *font)
 {
-	// @TODO: Implement
+	texture_destroy(&font->texture);
 }
 
 mat4 camera_view_projection(const Camera *camera)
