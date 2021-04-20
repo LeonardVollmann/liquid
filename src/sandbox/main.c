@@ -7,9 +7,12 @@
 #include "texture.h"
 #include "obj_loading.h"
 #include "input.h"
+#include "liquid.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>	
+
+ControlData control;
 
 int main(int argc, char const *argv[])
 {
@@ -17,8 +20,9 @@ int main(int argc, char const *argv[])
 	const f32 width = 1280;
 	const f32 height = 720;
 
-	Window window = graphics_create_window(width, height, "Window");
-	input_initialize(window);
+	Window window = graphics_create_window(&control.graphics_data, width, height, "Sandbox");
+
+	input_initialize(&control.input_data, &control.graphics_data, window);
 
 	Mesh bunny = obj_load_mesh("res/sandbox/bunny.obj");
 	Mesh monkey = obj_load_mesh("res/sandbox/monkey.obj");
@@ -52,12 +56,12 @@ int main(int argc, char const *argv[])
 	vec2 angles = vec2_zero();
 
 	f32 t = 0;
-	while (!graphics_terminated())
+	while (!graphics_terminated(&control.graphics_data))
 	{
 		t += 0.01f;
 
-		input_update(window);
-		graphics_begin_frame(&window);
+		input_update(&control.input_data, window);
+		graphics_begin_frame(&control.graphics_data, &window);
 
 		vec4 color1 = {0, 0.1, 0.1, 1};
 		vec4 color2 = {1, 0, 1, 1};
@@ -75,38 +79,38 @@ int main(int argc, char const *argv[])
 
 		float speed = 0.1f;
 		vec2 move_amount = vec2_zero();
-		if (input_get_key(KEY_W))
+		if (input_get_key(&control.input_data, KEY_W))
 		{
 			move_amount.y -= speed;
 		}
-		if (input_get_key(KEY_S))
+		if (input_get_key(&control.input_data, KEY_S))
 		{
 			move_amount.y += speed;
 		}
-		if (input_get_key(KEY_A))
+		if (input_get_key(&control.input_data, KEY_A))
 		{
 			move_amount.x -= speed;
 		}
-		if (input_get_key(KEY_D)) 
+		if (input_get_key(&control.input_data, KEY_D)) 
 		{
 			move_amount.x += speed;
 		}
 		transform_translate(&camera.transform, vec3_scalar_mul(quat_get_right(camera.transform.rot), move_amount.x));
 		transform_translate(&camera.transform, vec3_scalar_mul(quat_get_forward(camera.transform.rot), move_amount.y));
 
-		if (input_get_mouse_button_single_detection(MOUSE_BUTTON_LEFT)) {
+		if (input_get_mouse_button(&control.input_data, MOUSE_BUTTON_LEFT)) {
 			mouse_control = true;
-			graphics_disable_cursor(window);
+			graphics_disable_cursor(&control.graphics_data, window);
 		}
-		if (input_get_key_single_detection(KEY_ESCAPE)) {
+		if (input_get_key(&control.input_data, KEY_ESCAPE)) {
 			mouse_control = false;
-			graphics_show_cursor(window);
+			graphics_show_cursor(&control.graphics_data, window);
 			vec2 center_window = {width/2, height/2};
-			input_set_cursor_pos(center_window);
+			input_set_cursor_pos(&control.input_data, center_window);
 		}
 
 		if (mouse_control) {
-			vec2 angle_delta = vec2_scalar_mul(input_get_cursor_delta(), turn_speed);
+			vec2 angle_delta = vec2_scalar_mul(input_get_cursor_delta(&control.input_data), turn_speed);
 			angles = vec2_add(angles, angle_delta);
 			
 			quat rotation = quat_from_euler_angles(0, angles.x, 0);
@@ -118,15 +122,15 @@ int main(int argc, char const *argv[])
 			camera.transform.rot = quat_normalize(quat_mul(rot1, rot2));
 		}
 
-		graphics_draw_mesh(dragon, &t5, camera_view_projection(&camera), &bricks, color1);
-		graphics_draw_mesh(bunny, &t3, camera_view_projection(&camera), &bricks, color1);
-		graphics_draw_mesh(monkey, &t4, camera_view_projection(&camera), &bricks, color1);
-		graphics_draw_text("Hello World", font, &t2, ortho);
-		graphics_draw_text("It's me, Leonard", font, &t6, ortho);
+		graphics_draw_mesh(&control.graphics_data, dragon, &t5, camera_view_projection(&camera), &bricks, color1);
+		graphics_draw_mesh(&control.graphics_data, bunny, &t3, camera_view_projection(&camera), &bricks, color1);
+		graphics_draw_mesh(&control.graphics_data, monkey, &t4, camera_view_projection(&camera), &bricks, color1);
+		graphics_draw_text(&control.graphics_data, "Hello, World.", font, &t2, ortho);
+		graphics_draw_text(&control.graphics_data, "It is I, Leonard.", font, &t6, ortho);
 
-		graphics_sort_and_flush_queue();
+		graphics_sort_and_flush_queue(&control.graphics_data);
 
-		graphics_end_frame(&window);
+		graphics_end_frame(&control.graphics_data, &window);
 	}
 
 	return 0;

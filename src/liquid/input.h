@@ -128,19 +128,34 @@
 #define MOUSE_BUTTON_LEFT GLFW_MOUSE_BUTTON_LEFT
 #define MOUSE_BUTTON_RIGHT GLFW_MOUSE_BUTTON_RIGHT
 
-void input_initialize(Window window);
-void input_update(Window window);
+typedef struct InputData
+{
+	GLFWwindow *window;
 
-bool input_get_key(i32 key);
-bool input_get_mouse_button(i32 mouse_button);
+	// bool keys[512];
+	// bool keys_single_detection[512];
+	// bool mouse_buttons[64];
+	// bool mouse_buttons_single_detection[64];
+	// bool cursor_visible;
+	// bool mouse_locked;
+	vec2 cursor_pos;
+	vec2 old_cursor_pos;
+	vec2 cursorPosDelta;
+} InputData;
+
+void input_initialize(InputData *input_data, GraphicsData *graphics_data, Window window);
+void input_update(InputData *input_data, Window window);
+
+bool input_get_key(InputData *input_data, i32 key);
+bool input_get_mouse_button(InputData *input_data, i32 mouse_button);
 
 // TODO: RENAME THESE
-bool input_get_key_single_detection(i32 key);
-bool input_get_mouse_button_single_detection(i32 mouse_button);
+// bool input_get_key_single_detection(InputData *input_data, i32 key);
+// bool input_get_mouse_button_single_detection(InputData *input_data, i32 mouse_button);
 
 // bool input_was_key_pressed();
 // bool input_was_key_released();
 
-vec2 input_get_cursor_pos();
-vec2 input_get_cursor_delta();
-void input_set_cursor_pos(vec2 pos);
+vec2 input_get_cursor_pos(InputData *input_data);
+vec2 input_get_cursor_delta(InputData *input_data);
+void input_set_cursor_pos(InputData *input_data, vec2 pos);

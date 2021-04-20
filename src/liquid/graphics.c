@@ -42,22 +42,7 @@ typedef struct
 	Font font;
 } DrawTextCommandData;
 
-static struct
-{
-	bool initialized;
-	u32 num_windows;
-	GLFWwindow *windows[GRAPHICS_MAX_WINDOWS];
-	u32 indices[GRAPHICS_MAX_WINDOWS];
-
-	GLuint primitive_triangle_vao;
-	GLuint primitive_rect_vao;
-
-	size_t queue_capacity;
-	size_t queue_size;
-	DrawCommand *queue;
-} graphics_data;
-
-static void init_primitives()
+static void init_primitives(GraphicsData *graphics_data)
 {
 	static const GLfloat triangle_vertices[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -87,8 +72,8 @@ static void init_primitives()
 
 	GLuint vbo;
 
-	GL_CALL(glGenVertexArrays, 1, &graphics_data.primitive_triangle_vao);
-	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle_vao);
+	GL_CALL(glGenVertexArrays, 1, &graphics_data->primitive_triangle_vao);
+	GL_CALL(glBindVertexArray, graphics_data->primitive_triangle_vao);
 	GL_CALL(glGenBuffers, 1, &vbo);
 	GL_CALL(glBindBuffer, GL_ARRAY_BUFFER, vbo);
 	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(triangle_vertices) + sizeof(triangle_uvs), triangle_vertices, GL_STATIC_DRAW);
@@ -100,8 +85,8 @@ static void init_primitives()
 	GL_CALL(glBindVertexArray, 0);
 	GL_CALL(glDeleteBuffers, 1, &vbo);
 
-	GL_CALL(glGenVertexArrays, 1, &graphics_data.primitive_rect_vao);
-	GL_CALL(glBindVertexArray, graphics_data.primitive_rect_vao);
+	GL_CALL(glGenVertexArrays, 1, &graphics_data->primitive_rect_vao);
+	GL_CALL(glBindVertexArray, graphics_data->primitive_rect_vao);
 	GL_CALL(glGenBuffers, 1, &vbo);
 	GL_CALL(glBindBuffer, GL_ARRAY_BUFFER, vbo);
 	GL_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(rect_vertices) + sizeof(rect_uvs), rect_vertices, GL_STATIC_DRAW);
@@ -114,14 +99,14 @@ static void init_primitives()
 	GL_CALL(glDeleteBuffers, 1, &vbo);
 }
 
-Window graphics_create_window(u32 width, u32 height, const char *title)
+Window graphics_create_window(GraphicsData *graphics_data, u32 width, u32 height, const char *title)
 {
 	GLFWwindow *result;
 
-	if (!graphics_data.initialized)
+	if (!graphics_data->initialized)
 	{
 		for (u32 i = 0; i < GRAPHICS_MAX_WINDOWS; i++) {
-			graphics_data.indices[i] = i;
+			graphics_data->indices[i] = i;
 		}
 
 		if (!glfwInit())
@@ -132,7 +117,7 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 		INFO("Initialized GLFW.");
 	}
 
-	if (graphics_data.num_windows == GRAPHICS_MAX_WINDOWS)
+	if (graphics_data->num_windows == GRAPHICS_MAX_WINDOWS)
 	{
 		ERROR("Maximum number of windows surpassed.");
 		return -1;
@@ -153,7 +138,7 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 
 	glfwMakeContextCurrent(result);
 
-	if (!graphics_data.initialized)
+	if (!graphics_data->initialized)
 	{
 		glewExperimental = GL_TRUE;
 		i32 error = glewInit();
@@ -169,39 +154,39 @@ Window graphics_create_window(u32 width, u32 height, const char *title)
 		INFO("GLSL version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 		shader_load_defaults();
-		init_primitives();
+		init_primitives(graphics_data);
 
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_DEPTH_CLAMP);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		graphics_data.initialized = true;
+		graphics_data->initialized = true;
 	}
 
-	graphics_data.windows[graphics_data.indices[graphics_data.num_windows]] = result;
-	graphics_data.num_windows++;
+	graphics_data->windows[graphics_data->indices[graphics_data->num_windows]] = result;
+	graphics_data->num_windows++;
 
 	// TEMP
-	graphics_data.queue = malloc(1024 * sizeof(DrawCommand));
-	graphics_data.queue_capacity = 1024;
+	graphics_data->queue = malloc(1024 * sizeof(DrawCommand));
+	graphics_data->queue_capacity = 1024;
 
 	INFO("Created window. Title: %s, width: %d, height: %d", title, width, height);
 
-	return graphics_data.num_windows - 1;
+	return graphics_data->num_windows - 1;
 }
 
-void graphics_destroy_window(Window *window)
+void graphics_destroy_window(GraphicsData *graphics_data, Window *window)
 {
-	GLFWwindow **temp = &graphics_data.windows[graphics_data.indices[*window]]; 
+	GLFWwindow **temp = &graphics_data->windows[graphics_data->indices[*window]]; 
 	glfwDestroyWindow(*temp);
-	*temp = graphics_data.windows[graphics_data.indices[graphics_data.num_windows - 1]];
-	graphics_data.indices[graphics_data.num_windows - 1] = graphics_data.indices[*window];
-	graphics_data.num_windows--;
+	*temp = graphics_data->windows[graphics_data->indices[graphics_data->num_windows - 1]];
+	graphics_data->indices[graphics_data->num_windows - 1] = graphics_data->indices[*window];
+	graphics_data->num_windows--;
 	INFO("Closed window: %d", *window);
 	*window = -1;
 
-	if (graphics_data.num_windows == 0)
+	if (graphics_data->num_windows == 0)
 	{
 		INFO("All windows are closed.");
 		shader_destroy_defaults();
@@ -210,93 +195,93 @@ void graphics_destroy_window(Window *window)
 	}
 }
 
-void *graphics_get_window_ptr(Window window) {
-	return graphics_data.windows[window];
+void *graphics_get_window_ptr(GraphicsData *graphics_data, Window window) {
+	return graphics_data->windows[window];
 }
 
-bool graphics_terminated()
+bool graphics_terminated(GraphicsData *graphics_data)
 {
-	return graphics_data.initialized && !graphics_data.num_windows;
+	return graphics_data->initialized && !graphics_data->num_windows;
 }
 
-bool window_should_close(Window *window)
+bool window_should_close(GraphicsData *graphics_data, Window *window)
 {
-	return glfwWindowShouldClose(graphics_data.windows[graphics_data.indices[*window]]);
+	return glfwWindowShouldClose(graphics_data->windows[graphics_data->indices[*window]]);
 }
 
-void graphics_begin_frame(Window *window)
+void graphics_begin_frame(GraphicsData *graphics_data, Window *window)
 {
 	if (*window != -1)
 	{
-		glfwMakeContextCurrent(graphics_data.windows[graphics_data.indices[*window]]);
+		glfwMakeContextCurrent(graphics_data->windows[graphics_data->indices[*window]]);
 		GL_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 }
 
-void graphics_end_frame(Window *window)
+void graphics_end_frame(GraphicsData *graphics_data, Window *window)
 {
 	if (*window != -1)
 	{
-		glfwMakeContextCurrent(graphics_data.windows[graphics_data.indices[*window]]);
-		glfwSwapBuffers(graphics_data.windows[graphics_data.indices[*window]]);
+		glfwMakeContextCurrent(graphics_data->windows[graphics_data->indices[*window]]);
+		glfwSwapBuffers(graphics_data->windows[graphics_data->indices[*window]]);
 
-		if (window_should_close(window)) {
-			graphics_destroy_window(window);
+		if (window_should_close(graphics_data, window)) {
+			graphics_destroy_window(graphics_data, window);
 		}
 	}
 }
 
-void graphics_hide_cursor(Window window)
+void graphics_hide_cursor(GraphicsData *graphics_data, Window window)
 {
-	glfwSetInputMode(graphics_data.windows[window], GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(graphics_data->windows[graphics_data->indices[window]], GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
-void graphics_disable_cursor(Window window)
+void graphics_disable_cursor(GraphicsData *graphics_data, Window window)
 {
-	glfwSetInputMode(graphics_data.windows[window], GLFW_CURSOR, GLFW_CURSOR_DISABLED);	
+	glfwSetInputMode(graphics_data->windows[graphics_data->indices[window]], GLFW_CURSOR, GLFW_CURSOR_DISABLED);	
 }
 
-void graphics_show_cursor(Window window)
+void graphics_show_cursor(GraphicsData *graphics_data, Window window)
 {
-	glfwSetInputMode(graphics_data.windows[window], GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	glfwSetInputMode(graphics_data->windows[graphics_data->indices[window]], GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void graphics_submit_call(DrawCommand *cmd)
+void graphics_submit_call(GraphicsData *graphics_data, DrawCommand *cmd)
 {
 	// @TODO: implement queue type
-	graphics_data.queue[graphics_data.queue_size] = *cmd;
-	graphics_data.queue_size += 1;
+	graphics_data->queue[graphics_data->queue_size] = *cmd;
+	graphics_data->queue_size += 1;
 }
 
-static void exexute_draw_command(DrawCommand cmd)
+static void exexute_draw_command(GraphicsData *graphics_data, DrawCommand cmd)
 {
 	if (cmd.type == DRAW_TRIANGLE) {
 		DrawTriangleCommandData *data = (DrawTriangleCommandData *) cmd.data;
-		graphics_draw_triangle(&data->transform, data->projection, &data->texture, data->color);
+		graphics_draw_triangle(graphics_data, &data->transform, data->projection, &data->texture, data->color);
 	} else if (cmd.type == DRAW_RECT) {
 		DrawRectCommandData *data = (DrawRectCommandData *) cmd.data;
-		graphics_draw_rect(&data->transform, data->projection, &data->texture, data->color);
+		graphics_draw_rect(graphics_data, &data->transform, data->projection, &data->texture, data->color);
 	} else if (cmd.type == DRAW_MESH) {
 		DrawMeshCommandData *data = (DrawMeshCommandData *) cmd.data;
-		graphics_draw_mesh(data->mesh, &data->transform, data->projection, &data->texture, data->color);
+		graphics_draw_mesh(graphics_data, data->mesh, &data->transform, data->projection, &data->texture, data->color);
 	} else {
 		FATAL("Unknown draw command type: %d", cmd.type);
 	}
 }
 
-void graphics_sort_and_flush_queue()
+void graphics_sort_and_flush_queue(GraphicsData *graphics_data)
 {
 	// @TODO: key generation and sorting
 
 	// Flushing
-	for (u32 i = 0; i < graphics_data.queue_size; i++) {
-		exexute_draw_command(graphics_data.queue[i]);
+	for (u32 i = 0; i < graphics_data->queue_size; i++) {
+		exexute_draw_command(graphics_data, graphics_data->queue[i]);
 	}
 
-	graphics_data.queue_size = 0;
+	graphics_data->queue_size = 0;
 }
 
-void graphics_draw_triangle(const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
+void graphics_draw_triangle(GraphicsData *graphics_data, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
@@ -311,11 +296,11 @@ void graphics_draw_triangle(const Transform *transform, mat4 view_projection, co
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
-	GL_CALL(glBindVertexArray, graphics_data.primitive_triangle_vao);
+	GL_CALL(glBindVertexArray, graphics_data->primitive_triangle_vao);
 	GL_CALL(glDrawArrays, GL_TRIANGLES, 0, 3);
 }
 
-void graphics_draw_rect(const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
+void graphics_draw_rect(GraphicsData *graphics_data, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
@@ -330,11 +315,11 @@ void graphics_draw_rect(const Transform *transform, mat4 view_projection, const 
 	GL_CALL(glUniform4f, loc_color, color.r, color.g, color.b, color.a);
 	GL_CALL(glUniform1i, loc_diffuse, 0);
 
-	GL_CALL(glBindVertexArray, graphics_data.primitive_rect_vao);
+	GL_CALL(glBindVertexArray, graphics_data->primitive_rect_vao);
 	GL_CALL(glDrawArrays, GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
+void graphics_draw_mesh(GraphicsData *graphics_data, Mesh mesh, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color)
 {
 	shader_bind(shader_get_basic());
 	texture_bind(texture);
@@ -367,7 +352,7 @@ static char *get_file_contents(const char *path) // @TODO: centralize this funct
 	return text;
 }
 
-void graphics_draw_text(const char *text, Font font, Transform *transform, mat4 view_projection)
+void graphics_draw_text(GraphicsData *graphics_data, const char *text, Font font, Transform *transform, mat4 view_projection)
 {
 	shader_bind(shader_get_text());
 	texture_bind(&font.texture);

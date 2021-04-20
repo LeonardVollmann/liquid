@@ -11,6 +11,35 @@
 
 typedef u32 Window;
 
+enum DrawCommandType
+{
+	DRAW_TRIANGLE,
+	DRAW_RECT,
+	DRAW_MESH,
+	DRAW_TEXT
+};
+
+typedef struct
+{
+	enum DrawCommandType type;
+	void *data;
+} DrawCommand;
+
+typedef struct
+{
+	bool initialized;
+	u32 num_windows;
+	GLFWwindow* windows[GRAPHICS_MAX_WINDOWS];
+	u32 indices[GRAPHICS_MAX_WINDOWS];
+
+	GLuint primitive_triangle_vao;
+	GLuint primitive_rect_vao;
+
+	size_t queue_capacity;
+	size_t queue_size;
+	DrawCommand *queue;
+} GraphicsData;
+
 typedef struct
 {
 	Transform transform;
@@ -29,38 +58,24 @@ typedef struct
 	Texture texture;
 } Font;
 
-enum DrawCommandType
-{
-	DRAW_TRIANGLE,
-	DRAW_RECT,
-	DRAW_MESH,
-	DRAW_TEXT
-};
+Window graphics_create_window(GraphicsData *graphics_data, u32 width, u32 height, const char *title);
+void graphics_destroy_window(GraphicsData *graphics_data, Window *window);
+void *graphics_get_window_ptr(GraphicsData *graphics_data, Window window);
+bool graphics_terminated(GraphicsData *graphics_data);
+void graphics_begin_frame(GraphicsData *graphics_data, Window *window);
+void graphics_end_frame(GraphicsData *graphics_data, Window *window);
 
-typedef struct
-{
-	enum DrawCommandType type;
-	void *data;
-} DrawCommand;
+void graphics_hide_cursor(GraphicsData *graphics_data, Window window);
+void graphics_disable_cursor(GraphicsData *graphics_data, Window window);
+void graphics_show_cursor(GraphicsData *graphics_data, Window window);
 
-Window graphics_create_window(u32 width, u32 height, const char *title);
-void graphics_destroy_window(Window *window);
-void *graphics_get_window_ptr(Window window);
-bool graphics_terminated();
-void graphics_begin_frame(Window *window);
-void graphics_end_frame(Window *window);
+void graphics_submit_call(GraphicsData *graphics_data, DrawCommand *cmd);
+void graphics_sort_and_flush_queue(GraphicsData *graphics_data);
 
-void graphics_hide_cursor(Window window);
-void graphics_disable_cursor(Window window);
-void graphics_show_cursor(Window window);
-
-void graphics_submit_call(DrawCommand *cmd);
-void graphics_sort_and_flush_queue();
-
-void graphics_draw_triangle(const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color);
-void graphics_draw_rect(const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color);
-void graphics_draw_mesh(Mesh mesh, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color);
-void graphics_draw_text(const char *text, Font font, Transform *transform, mat4 view_projection);
+void graphics_draw_triangle(GraphicsData *graphics_data, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color);
+void graphics_draw_rect(GraphicsData *graphics_data, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color);
+void graphics_draw_mesh(GraphicsData *graphics_data, Mesh mesh, const Transform *transform, mat4 view_projection, const Texture *texture, vec4 color);
+void graphics_draw_text(GraphicsData *graphics_data, const char *text, Font font, Transform *transform, mat4 view_projection);
 
 Font font_load(const char *path, f32 size);
 
